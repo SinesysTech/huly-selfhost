@@ -36,7 +36,7 @@ services:
     restart: unless-stopped
 
   rekoni:
-    image: hardcoreeng/rekoni-service:${HULY_VERSION}
+    image: hardcoreeng/rekoni-service:v0.6.377
     environment:
       - SECRET=${HULY_SECRET}
     deploy:
@@ -48,14 +48,14 @@ services:
       - "traefik.enable=true"
       - "traefik.http.routers.rekoni.entrypoints=websecure"
       - "traefik.http.services.rekoni.loadbalancer.server.port=4004"
-      - "traefik.http.routers.rekoni.rule=Host(`${SERVER_ADDRESS}`) && PathPrefix(`/rekoni`)"
+      - "traefik.http.routers.rekoni.rule=Host(`huly.sinesys.app`) && PathPrefix(`/rekoni`)"
       - "traefik.http.routers.rekoni.middlewares=rekoni-stripprefix"
       - "traefik.http.middlewares.rekoni-stripprefix.stripprefix.prefixes=/rekoni"
       - "traefik.http.routers.rekoni.tls=true"
       - "traefik.http.routers.rekoni.tls.certresolver=myresolver"
 
   transactor:
-    image: hardcoreeng/transactor:${HULY_VERSION}
+    image: hardcoreeng/transactor:v0.6.377
     environment:
       - SERVER_PORT=3333
       - SERVER_SECRET=${HULY_SECRET}
@@ -72,13 +72,13 @@ services:
     labels:
       - "traefik.enable=true"
       - "traefik.http.routers.transactor.entrypoints=transactor"
-      - "traefik.http.routers.transactor.rule=Host(`${SERVER_ADDRESS}`)"
+      - "traefik.http.routers.transactor.rule=Host(`huly.sinesys.app`)"
       - "traefik.http.services.transactor.loadbalancer.server.port=3333"
       - "traefik.http.routers.transactor.tls=true"
       - "traefik.http.routers.transactor.tls.certresolver=myresolver"
 
   collaborator:
-    image: hardcoreeng/collaborator:${HULY_VERSION}
+    image: hardcoreeng/collaborator:v0.6.377
     environment:
       - COLLABORATOR_PORT=3078
       - SECRET=${HULY_SECRET}
@@ -90,17 +90,17 @@ services:
       - "traefik.enable=true"
       - "traefik.http.routers.collaborator.entrypoints=collaborator"
       - "traefik.http.services.collaborator.loadbalancer.server.port=3078"
-      - "traefik.http.routers.collaborator.rule=Host(`${SERVER_ADDRESS}`)"
+      - "traefik.http.routers.collaborator.rule=Host(`huly.sinesys.app`)"
       - "traefik.http.routers.collaborator.tls=true"
       - "traefik.http.routers.collaborator.tls.certresolver=myresolver"
 
   account:
-    image: hardcoreeng/account:${HULY_VERSION}
+    image: hardcoreeng/account:v0.6.377
     environment:
       - SERVER_PORT=3000
       - SERVER_SECRET=${HULY_SECRET}
       - DB_URL=mongodb://mongodb:27017
-      - TRANSACTOR_URL=ws://transactor:3333;wss://${SERVER_ADDRESS}:3333
+      - TRANSACTOR_URL=ws://transactor:3333;wss://huly.sinesys.app:3333
       - STORAGE_CONFIG=minio|minio?accessKey=minioadmin&secretKey=minioadmin
       - FRONT_URL=http://front:8080
       - STATS_URL=http://stats:4900
@@ -112,19 +112,18 @@ services:
       - "traefik.enable=true"
       - "traefik.http.routers.account.entrypoints=websecure"
       - "traefik.http.services.account.loadbalancer.server.port=3000"
-      - "traefik.http.routers.account.rule=Host(`${SERVER_ADDRESS}`) && PathPrefix(`/accounts`)"
+      - "traefik.http.routers.account.rule=Host(`huly.sinesys.app`) && PathPrefix(`/accounts`)"
       - "traefik.http.routers.account.middlewares=account-stripprefix"
       - "traefik.http.middlewares.account-stripprefix.stripprefix.prefixes=/accounts"
       - "traefik.http.routers.account.tls=true"
       - "traefik.http.routers.account.tls.certresolver=myresolver"
 
   workspace:
-    image: hardcoreeng/workspace:${HULY_VERSION}
-    environment:
+    image: hardcoreeng/workspace:v0.6.377
       - SERVER_SECRET=${HULY_SECRET}
       - DB_URL=mongodb://mongodb:27017
       - MONGO_URL=mongodb://mongodb:27017
-      - TRANSACTOR_URL=ws://transactor:3333;wss://${SERVER_ADDRESS}:3333
+      - TRANSACTOR_URL=ws://transactor:3333;wss://huly.sineys.app:3333
       - STORAGE_CONFIG=minio|minio?accessKey=minioadmin&secretKey=minioadmin
       - MODEL_ENABLED=*
       - ACCOUNTS_URL=http://account:3000
@@ -132,19 +131,19 @@ services:
     restart: unless-stopped
 
   front:
-    image: hardcoreeng/front:${HULY_VERSION}
+    image: hardcoreeng/front:v0.6.377
     environment:
       - SERVER_PORT=8080
       - SERVER_SECRET=${HULY_SECRET}
-      - ACCOUNTS_URL=https://${SERVER_ADDRESS}/accounts
-      - REKONI_URL=https://${SERVER_ADDRESS}/rekoni
-      - CALENDAR_URL=https://${SERVER_ADDRESS}:8095
-      - GMAIL_URL=https://${SERVER_ADDRESS}:8088
-      - TELEGRAM_URL=https://${SERVER_ADDRESS}:8086
-      - STATS_URL=https://${SERVER_ADDRESS}/stats
+      - ACCOUNTS_URL=https://huly.sinesys.app/accounts
+      - REKONI_URL=https://huly.sinesys.app/rekoni
+      - CALENDAR_URL=https://huly.sinesys.app:8095
+      - GMAIL_URL=https://huly.sinesys.app:8088
+      - TELEGRAM_URL=https://huly.sinesys.app:8086
+      - STATS_URL=https://huly.sinesys.app/stats
       - UPLOAD_URL=/files
       - ELASTIC_URL=http://elastic:9200
-      - COLLABORATOR_URL=wss://${SERVER_ADDRESS}:3078
+      - COLLABORATOR_URL=wss://huly.sinesys.app:3078
       - STORAGE_CONFIG=minio|minio?accessKey=minioadmin&secretKey=minioadmin
       - MONGO_URL=mongodb://mongodb:27017
       - TITLE=Huly Self Host
@@ -157,12 +156,12 @@ services:
       - "traefik.port=80"
       - "traefik.http.routers.front.entrypoints=websecure"
       - "traefik.http.services.front.loadbalancer.server.port=8080"
-      - "traefik.http.routers.front.rule=Host(`${SERVER_ADDRESS}`)"
+      - "traefik.http.routers.front.rule=Host(`huly.sinesys.app`)"
       - "traefik.http.routers.front.tls=true"
       - "traefik.http.routers.front.tls.certresolver=myresolver"
 
   fulltext:
-    image: hardcoreeng/fulltext:${HULY_VERSION}
+    image: hardcoreeng/fulltext:v0.6.377
     environment:
       - SERVER_SECRET=${HULY_SECRET}
       - DB_URL=mongodb://mongodb:27017
@@ -175,7 +174,7 @@ services:
     restart: unless-stopped
 
   stats:
-    image: hardcoreeng/stats:${HULY_VERSION}
+    image: hardcoreeng/stats:v0.6.377
     environment:
       - PORT=4900
       - SERVER_SECRET=${HULY_SECRET}
@@ -184,7 +183,7 @@ services:
       - "traefik.enable=true"
       - "traefik.http.routers.stats.entrypoints=websecure"
       - "traefik.http.services.stats.loadbalancer.server.port=4900"
-      - "traefik.http.routers.stats.rule=Host(`${SERVER_ADDRESS}`) && PathPrefix(`/stats`)"
+      - "traefik.http.routers.stats.rule=Host(`huly.sinesys.app`) && PathPrefix(`/stats`)"
       - "traefik.http.routers.stats.middlewares=stats-stripprefix"
       - "traefik.http.middlewares.stats-stripprefix.stripprefix.prefixes=/stats"
       - "traefik.http.routers.stats.tls=true"
