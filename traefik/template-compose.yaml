@@ -8,6 +8,9 @@ services:
     volumes:
       - db:/data/db
     restart: unless-stopped
+    networks:
+      - internal-services
+
   elastic:
     image: "elasticsearch:7.14.2"
     command: |
@@ -27,6 +30,8 @@ services:
       retries: 10
       test: curl -s http://localhost:9200/_cluster/health | grep -vq '"status":"red"'
     restart: unless-stopped
+    networks:
+      - internal-services
 
   minio:
     image: "minio/minio"
@@ -34,6 +39,8 @@ services:
     volumes:
       - files:/data
     restart: unless-stopped
+    networks:
+      - internal-services
 
   rekoni:
     image: hardcoreeng/rekoni-service:v0.6.377
@@ -44,6 +51,9 @@ services:
         limits:
           memory: 500M
     restart: unless-stopped
+    networks:
+      - internal-services
+      - traefik-public
     labels:
       - "traefik.enable=true"
       - "traefik.http.routers.rekoni.entrypoints=websecure"
@@ -69,6 +79,9 @@ services:
       - STATS_URL=http://stats:4900
       - LAST_NAME_FIRST=true
     restart: unless-stopped
+    networks:
+      - internal-services
+      - traefik-public
     labels:
       - "traefik.enable=true"
       - "traefik.http.routers.transactor.entrypoints=transactor"
@@ -86,6 +99,9 @@ services:
       - STATS_URL=http://stats:4900
       - STORAGE_CONFIG=minio|minio?accessKey=minioadmin&secretKey=minioadmin
     restart: unless-stopped
+    networks:
+      - internal-services
+      - traefik-public
     labels:
       - "traefik.enable=true"
       - "traefik.http.routers.collaborator.entrypoints=collaborator"
@@ -108,6 +124,9 @@ services:
       - ACCOUNTS_URL=http://account:3000
       - ACCOUNT_PORT=3000
     restart: unless-stopped
+    networks:
+      - internal-services
+      - traefik-public
     labels:
       - "traefik.enable=true"
       - "traefik.http.routers.account.entrypoints=websecure"
@@ -130,6 +149,8 @@ services:
       - ACCOUNTS_URL=http://account:3000
       - STATS_URL=http://stats:4900
     restart: unless-stopped
+    networks:
+      - internal-services
 
   front:
     image: hardcoreeng/front:v0.6.377
@@ -152,6 +173,9 @@ services:
       - LAST_NAME_FIRST=true
       - DESKTOP_UPDATES_CHANNEL=selfhost
     restart: unless-stopped
+    networks:
+      - internal-services
+      - traefik-public
     labels:
       - "traefik.enable=true"
       - "traefik.port=80"
@@ -173,6 +197,8 @@ services:
       - ACCOUNTS_URL=http://account:3000
       - STATS_URL=http://stats:4900
     restart: unless-stopped
+    networks:
+      - internal-services
 
   stats:
     image: hardcoreeng/stats:v0.6.377
@@ -180,6 +206,9 @@ services:
       - PORT=4900
       - SERVER_SECRET=${HULY_SECRET}
     restart: unless-stopped
+    networks:
+      - internal-services
+      - traefik-public
     labels:
       - "traefik.enable=true"
       - "traefik.http.routers.stats.entrypoints=websecure"
@@ -189,6 +218,12 @@ services:
       - "traefik.http.middlewares.stats-stripprefix.stripprefix.prefixes=/stats"
       - "traefik.http.routers.stats.tls=true"
       - "traefik.http.routers.stats.tls.certresolver=myresolver"
+ 
+networks:
+  traefik-public:
+    name: traefik-public
+  internal-services:
+    name: internal-services
 
 volumes:
   db:
